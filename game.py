@@ -41,6 +41,8 @@ class Game(object):
         Obj=Game("")
         Obj.fromList(TheL)
         return Obj
+    def setKp(self, kp):
+        self.kp=kp.PLID
 
 class Host(object):
     def __init__(self):
@@ -48,6 +50,19 @@ class Host(object):
         self.Games={}#g.SGID:g
         self.pcs={}#p.PID:p
         self.Me=""
+
+    def getPcs(self, SGID):
+        GP={}
+        Complete=True
+        for k in self.Games[SGID].pcs:
+            if k in self.pcs:
+                GP[k]=self.pcs[k]
+            else:
+                Complete=False
+        return [Complete,GP]
+    def addPc(self, apc):
+        self.pcs[apc.PID]=apc
+        self.savePcs()
 
     def saveHost(self):
         self.saveMe()
@@ -63,14 +78,20 @@ class Host(object):
 
     def setMe(self, Me):
         self.Me=Me.PLID
+        self.Players[Me.PLID]=Me
+        self.savePlayers()
+        self.saveMe()
 
     def saveMe(self):
         with open('data/me.json', 'w' ) as pFp:
             json.dump({"MyPLID":self.Me}, pFp)
     def loadMe(self):
-        with open('data/me.json', 'r') as pFp:
-            Data=json.load(pFp)
-            self.Me=Data["MyPLID"]
+        try:
+            with open('data/me.json', 'r') as pFp:
+                Data=json.load(pFp)
+                self.Me=Data["MyPLID"]
+        except FileNotFoundError:
+            print("Warning: no stored \"Me\"")
          
     def savePlayers(self):
         with open('data/players.json', 'w' ) as pFp:
@@ -94,20 +115,32 @@ class Host(object):
             json.dump(pcs,pFp)
 
     def loadPlayers(self):
-        with open('data/players.json', 'r') as pFp:
-            Data=json.load(pFp)
-            for k in Data:
-                self.Players[k]=Player.loadFromList(Data[k])
+        try:
+            with open('data/players.json', 'r') as pFp:
+                Data=json.load(pFp)
+                for k in Data:
+                    self.Players[k]=Player.loadFromList(Data[k])
+        except FileNotFoundError:
+            print("Warning: no stored Players")
+
     def loadGames(self):
-        with open('data/games.json', 'r') as pFp:
-            Data=json.load(pFp)
-            for k in Data:
-                self.Games[k]=Game.loadFromList(Data[k])
+        try:
+            with open('data/games.json', 'r') as pFp:
+                Data=json.load(pFp)
+                for k in Data:
+                    self.Games[k]=Game.loadFromList(Data[k])
+        except FileNotFoundError:
+            print("Warning: no stored Games")
+
     def loadPcs(self):
-        with open('data/pcs.json', 'r') as pFp:
-            Data=json.load(pFp)
-            for k in Data:
-                self.pcs[k]=pc.loadFromList(Data[k])
+        try:
+            with open('data/pcs.json', 'r') as pFp:
+                Data=json.load(pFp)
+                for k in Data:
+                    self.pcs[k]=pc.loadFromList(Data[k])
+        except FileNotFoundError:
+            print("Warning: no stored Pcs")
+
 
     def savePlayer(self, PLID):
         with open("data/player%s.json"%PLID, 'w') as pFp:
@@ -119,7 +152,7 @@ class Host(object):
     def saveGame(self, SGID):
         with open("data/game%s.json"%SGID, 'w') as pFp:
             json.dump({SGID:self.Games[SGID].toList()}, pFp)
-    def loadGame(self, PLID):
+    def loadGame(self, SGID):
         with open("data/game%s.json"%SGID, 'r') as pFp:
             Data=json.load(pFp)
             self.Games[SGID]=Game.loadFromList(Data[SGID])

@@ -1,12 +1,14 @@
 from client import *
 
-H=Host()
+I=Host()
 me=Player("CRE","127.0.0.1")
-H.Players.update({me.PLID:me});
-H.setMe(me)
-H.saveHost()
+I.Players.update({me.PLID:me});
+I.setMe(me)
+I.saveHost()
 
-AC=Client(H)
+ACC=Client(I)
 
-AC.initial("CRE", "127.0.0.1")
+ACC.startServer()
 
+ACC.initial("CRE", "127.0.0.1")
+ACC.start("CRE")
